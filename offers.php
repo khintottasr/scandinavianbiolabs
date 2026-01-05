@@ -1,11 +1,9 @@
 <?php
-// 1. OGAds API Configuration
 $api_key = '38109|xCWqdYWb0ukY5V0knSRcuEJEPiqO1i8wVssqRU2Z4e4d1794';
 $ip = $_SERVER['REMOTE_ADDR'];
 $ua = $_SERVER['HTTP_USER_AGENT'];
 
-// Call API (ctype=0 for all offers)
-$url = "https://applocked.org/api/v2?ip=" . urlencode($ip) . "&user_agent=" . urlencode($ua) . "&ctype=0";
+$url = "https://applocked.org/api/v2?ip=" . urlencode($ip) . "&user_agent=" . urlencode($ua);
 
 $ch = curl_init();
 curl_setopt_array($ch, [
@@ -13,55 +11,34 @@ curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => ["Authorization: Bearer " . $api_key]
 ]);
-$response = curl_exec($ch);
-curl_close($ch);
-
-$data = json_decode($response);
-$offers = ($data && $data->success) ? $data->offers : [];
+$res = json_decode(curl_exec($ch));
+$offers = ($res && $res->success) ? $res->offers : [];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Your Reward</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #0b2e26; margin: 0; padding: 20px; color: #333; display: flex; justify-content: center; }
-        .container { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        h2 { color: #0b2e26; text-transform: uppercase; font-size: 22px; margin-bottom: 5px; }
-        p { color: #666; font-size: 14px; margin-bottom: 25px; }
-        .offer-card { display: flex; align-items: center; background: #f9f9f9; border: 1px solid #eee; border-radius: 15px; padding: 12px; margin-bottom: 15px; cursor: pointer; transition: 0.2s; }
-        .offer-card:hover { border-color: #10b981; transform: translateY(-2px); }
-        .offer-img { width: 60px; height: 60px; border-radius: 12px; margin-right: 15px; object-fit: cover; }
-        .offer-info { flex: 1; text-align: left; }
-        .offer-name { margin: 0; font-size: 15px; font-weight: bold; color: #111; }
-        .offer-desc { margin: 3px 0; font-size: 12px; color: #777; line-height: 1.3; }
-        .btn-get { background: #10b981; color: white; padding: 8px 15px; border-radius: 50px; font-weight: bold; font-size: 13px; }
+        body { background: #0b2e26; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .modal { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; text-align: center; }
+        .offer-item { display: flex; align-items: center; padding: 12px; border: 1px solid #eee; border-radius: 12px; margin-bottom: 10px; text-decoration: none; transition: 0.2s; }
+        .offer-item:hover { border-color: #10b981; background: #f9f9f9; }
+        .offer-img { width: 50px; height: 50px; border-radius: 10px; margin-right: 15px; }
+        .offer-name { flex: 1; text-align: left; color: #333; font-weight: bold; font-size: 14px; }
+        .btn { background: #10b981; color: white; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Select Your Reward</h2>
-        <p>Complete one task below to unlock your package for free.</p>
-
-        <div class="offers-list">
-            <?php if(!empty($offers)): ?>
-                <?php foreach(array_slice($offers, 0, 6) as $offer): ?>
-                    <div class="offer-card" onclick="window.location.href='<?php echo $offer->link; ?>'">
-                        <img src="<?php echo $offer->picture; ?>" class="offer-img">
-                        <div class="offer-info">
-                            <h4 class="offer-name"><?php echo $offer->name_short; ?></h4>
-                            <p class="offer-desc"><?php echo $offer->adcopy; ?></p>
-                        </div>
-                        <div class="btn-get">GET</div>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <p>No rewards available for your region at this moment.</p>
-            <?php endif; ?>
-        </div>
-        
-        <div style="font-size: 10px; color: #ccc; margin-top: 20px;">* Secured Verification System</div>
+    <div class="modal">
+        <h2 style="color:#0b2e26; margin:0;">Verification</h2>
+        <p style="color:#666; font-size:14px;">Complete one task to unlock your package.</p>
+        <?php foreach(array_slice($offers, 0, 5) as $offer): ?>
+            <a href="<?= $offer->link ?>" class="offer-item">
+                <img src="<?= $offer->picture ?>" class="offer-img">
+                <div class="offer-name"><?= $offer->name_short ?></div>
+                <div class="btn">FREE</div>
+            </a>
+        <?php endforeach; ?>
     </div>
 </body>
 </html>
